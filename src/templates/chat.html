@@ -17,6 +17,9 @@
         <h1 class="company-name">TradeGuru</h1>
       </a>
       <div class="nav-right">
+        <a href="#" class="login-button" disabled>
+          <img src="{{ url_for('static', filename='images/google-icon.png') }}" alt="Google Icon" width="20px" height="20px">
+        </a>
         <button class="menu-toggle" id="menuToggle">
           <svg
             width="24"
@@ -29,21 +32,6 @@
             <path d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-        <a href="#" class="login-button" disabled>
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path
-              d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M13.8 12H3"
-            />
-          </svg>
-          Login with Google
-        </a>
       </div>
     </nav>
 
