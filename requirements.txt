@@ -1,0 +1,9 @@
+langchain-community
+langchain-huggingface
+pymilvus
+langchain-milvus
+python-dotenv
+langchain-openai
+flask
+firebase-admin
+reportlab

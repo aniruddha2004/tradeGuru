@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PaperMind - Chat</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles-chat.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script defer src="{{ url_for('static', filename='js/chat-script.js') }}"></script>
+  </head>
+  <body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+      <a href="/" class="nav-brand">
+        <div class="logo">T</div>
+        <h1 class="company-name">TradeGuru</h1>
+      </a>
+      <div class="nav-right">
+        <button class="menu-toggle" id="menuToggle">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+        <a href="#" class="login-button">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M13.8 12H3"
+            />
+          </svg>
+          Login with Google
+        </a>
+      </div>
+    </nav>
+
+    <div class="chat-container">
+      <!-- Previous Queries Panel -->
+      <div class="queries-panel" id="queriesPanel">
+        <h2 class="queries-title">Bookmarks</h2>
+        <div class="queries-list" id="queriesList">
+          <!-- Queries will be inserted here by JavaScript -->
+        </div>
+      </div>
+
+      <!-- Chat Panel -->
+      <div class="chat-panel">
+        <div class="chat-content">
+          <div class="messages-container" id="messagesContainer">
+            <!-- Messages will be inserted here by JavaScript -->
+          </div>
+          <div class="bottom-container">
+            <div class="input-container">
+              <form class="input-form" id="messageForm">
+                <input
+                  type="text"
+                  class="message-input"
+                  id="messageInput"
+                  placeholder="Type your message..."
+                  autocomplete="off"
+                />
+                <button type="submit" class="send-button">Send</button>
+                <button type="submit" class="send-button" id="reset-btn">Reset</button>
+              </form>
+            </div>
+            <div class="expert-section">
+              <p class="expert-text">Not happy with the answers?</p>
+              <a href="#" class="expert-link">
+                Talk to our Experts!
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

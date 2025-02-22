@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to PaperMind</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles-landing.css') }}">
+    <script defer src="{{ url_for('static', filename='js/landing-script.js') }}"></script>
+</head>
+<body>
+    <div class="landing-container">
+        <!-- Logo Section -->
+        <div class="logo">T</div>
+
+        <!-- Company Name -->
+        <h1 class="company-name">TradeGuru</h1>
+
+        <!-- Sign-in Button -->
+        <button class="google-login">
+            <img src="{{ url_for('static', filename='images/google-icon.png') }}" alt="Google Icon">
+            Sign in with Google
+        </button>
+
+        <!-- Why Log In? Section -->
+        <h2 class="why-login">Why Log In?</h2>
+        <p class="login-description">
+            By logging in, you'll receive faster, more accurate, and tailored responses from our experts. 
+            Plus, you can save your conversations for easy reference in the future!
+        </p>
+
+        <!-- Try Without Logging In -->
+        <p class="try-without-login">
+            I understand. Let me <a href="#" class="try-link" id="tryWithoutLogin">try without logging in</a>
+        </p>
+    </div>
+</body>
+</html>

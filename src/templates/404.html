@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Not Found | PaperMind</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles-404.css') }}">
+    <script defer src="{{ url_for('static', filename='js/404-script.js') }}"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Icon -->
+        <div class="error-icon">⚠️</div>
+
+        <!-- Heading -->
+        <h1 class="error-title">Oops! Page Not Found</h1>
+
+        <!-- Message -->
+        <p class="error-message">
+            The page you're looking for doesn't exist or has been moved.
+        </p>
+
+        <!-- Back to Home Button -->
+        <button class="back-button" id="goHome">Go to Home</button>
+    </div>
+</body>
+</html>

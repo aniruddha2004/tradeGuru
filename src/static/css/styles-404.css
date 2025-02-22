@@ -1,0 +1,70 @@
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Body Styling */
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: rgba(24,34,52,255);
+    text-align: center;
+}
+
+/* Main Container */
+.container {
+    background: rgba(30,41,59,255);
+    padding: 3rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 480px;
+    height: auto;
+}
+
+/* Error Icon */
+.error-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+/* Error Title */
+.error-title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #f8fafc;
+}
+
+/* Error Message */
+.error-message {
+    margin-top: 0.5rem;
+    font-size: 1rem;
+    color: #e5e8ec;
+    line-height: 1.6;
+    padding: 0 1rem;
+}
+
+/* Back Button */
+.back-button {
+    margin-top: 2rem;
+    padding: 0.8rem 1rem;
+    background: none;
+    border: 2px solid #2563eb;
+    color: #2563eb;
+    font-size: 1rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.back-button:hover {
+    background-color: #2563eb;
+    color: white;
+}

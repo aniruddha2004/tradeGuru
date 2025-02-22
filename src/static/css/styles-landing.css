@@ -1,0 +1,112 @@
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Body Styling */
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #161f32;
+}
+
+/* Main Landing Container */
+.landing-container {
+    background: white;
+    padding: 4rem;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    width: 700px;
+    text-align: center;
+}
+
+/* Logo */
+.logo {
+    width: 60px;
+    height: 60px;
+    background-color: #2563eb;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 2rem;
+    margin: 0 auto 1rem auto;
+}
+
+/* Company Name */
+.company-name {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 1.5rem;
+}
+
+/* Google Sign-In Button */
+.google-login {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    background-color: #151e31;
+    border: 2px solid #151e31;
+    color: white;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.google-login:hover {
+    background: none;
+    color: #151e31;
+}
+
+/* Google Icon in Button */
+.google-login img {
+    width: 22px;
+    height: 22px;
+}
+
+/* Why Log In? */
+.why-login {
+    font-size: 1.35rem;
+    font-weight: 600;
+    margin-top: 2rem;
+    color: #1e293b;
+}
+
+/* Login Description */
+.login-description {
+    margin-top: 0.5rem;
+    font-size: 1rem;
+    color: #475569;
+    line-height: 1.5;
+}
+
+/* Try Without Logging In */
+.try-without-login {
+    margin-top: 2rem;
+    font-size: 1.1rem;
+    color: #1e293b;
+}
+
+.try-link {
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.try-link:hover {
+    text-decoration: underline;
+}

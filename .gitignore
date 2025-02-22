@@ -1,0 +1,32 @@
+# Ignore environment variables and secrets
+.env
+firebase-admin-sdk.json
+
+# Ignore virtual environment
+virtual/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore dependencies (if using virtualenv)
+*.egg-info/
+*.egg
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Ignore IDE-specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore logs and cache
+*.log
+logs/
+cache/
