@@ -53,7 +53,8 @@ embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-
 vector_db = Milvus(
     embedding_function=embeddings,
     connection_args={"uri": os.getenv("ZILLIZ_CLOUD_URI"), "user": os.getenv("ZILLIZ_CLOUD_USERNAME"), "password": os.getenv("ZILLIZ_CLOUD_PASSWORD"), "secure": True},
-    collection_name="election",
+    collection_name=os.getenv("DB_COLLECTION_NAME"),
+    text_field="text"
 )
 
 # Define a retrieval tool for querying the vector database
@@ -123,7 +124,7 @@ def ask_expert():
     elements = []
 
     # Add Title
-    elements.append(Paragraph(f"<b>Overview : </b>This document contains a detailed record of the uers interaction with the PaperMind Chatbot. It includes all the questions the user asked and the chatbot’s responses, providing a structured reference for your queries related to election data. This report has been generated as per our users request to get their questions answered by an expert.</p><br/><br/><br/><br/>", styles["Normal"]))
+    elements.append(Paragraph(f"<b>Overview : </b>This document contains a detailed record of the uers interaction with the Trade Guru Chatbot. It includes all the questions the user asked and the chatbot’s responses, providing a structured reference for your queries related to election data. This report has been generated as per our users request to get their questions answered by an expert.</p><br/><br/><br/><br/>", styles["Normal"]))
 
     for log in chat_logs:
         data = log.to_dict()
