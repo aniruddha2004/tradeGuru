@@ -1,0 +1,21 @@
+# Ignore virtual environment and dependencies
+virtual/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore local development dependencies
+node_modules/
+.env
+.DS_Store
+Thumbs.db
+
+# Ignore logs, cache, and Vercel-specific folders
+logs/
+cache/
+.vscode/
+.idea/
+*.log
+.vercel
