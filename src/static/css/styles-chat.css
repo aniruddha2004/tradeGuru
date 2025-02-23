@@ -187,6 +187,10 @@ body {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
+ul, ol {
+  padding-left: 1rem;
+}
+
 .message.user .message-content {
   background-color: rgba(29, 40, 58, 255);
   color: white;
