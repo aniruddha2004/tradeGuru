@@ -5,6 +5,8 @@ let queries = [];
 // DOM Elements
 const messageForm = document.getElementById("messageForm");
 const messageInput = document.getElementById("messageInput");
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const voiceButton = document.getElementById("voiceButton");
 const messagesContainer = document.getElementById("messagesContainer");
 const queriesList = document.getElementById("queriesList");
 const menuToggle = document.getElementById("menuToggle");
@@ -31,31 +33,33 @@ function formatTime(date) {
   }).format(new Date(date));
 }
 
-// Render messages
+// In renderMessage, assign a unique id to each message
 function renderMessage(message) {
   const messageDiv = document.createElement("div");
   messageDiv.className = `message ${message.sender}`;
-  if(message.loader) {
+  messageDiv.id = "message-" + message.id; // Unique id for scrolling
+
+  if (message.loader) {
     messageDiv.innerHTML = `
-    <div class="message-content" id="loading-message">
-      <div>${message.content}</div>
-    </div>
-  `;
-  }
-  else {
+      <div class="message-content" id="loading-message">
+        <div>${message.content}</div>
+      </div>
+    `;
+  } else {
     messageDiv.innerHTML = `
-    <div class="message-content">
-      <div>${message.content}</div>
-      <div class="message-time">${formatTime(message.timestamp)}</div>
-    </div>
-  `;
+      <div class="message-content">
+        <div>${message.content}</div>
+        <div class="message-time">${formatTime(message.timestamp)}</div>
+      </div>
+    `;
   }
 
-  // If it's an assistant message, add a bookmark button
-  if (message.sender === "assistant" && !(message.loader)) {
+  // Add bookmark button for assistant messages
+  if (message.sender === "assistant" && !message.loader) {
     const bookmarkButton = document.createElement("button");
     bookmarkButton.className = "bookmark-button";
-    bookmarkButton.innerHTML = '<i class="fa fa-bookmark-o" style="color: rgba(17,25,44,255)"></i>'; // Bookmark icon
+    bookmarkButton.innerHTML =
+      '<i class="fa fa-bookmark-o" style="color: rgba(17,25,44,255)"></i>';
     bookmarkButton.addEventListener("click", () => bookmarkResponse(message));
     messageDiv.appendChild(bookmarkButton);
   }
@@ -64,17 +68,33 @@ function renderMessage(message) {
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// Render queries (only assistant messages that were bookmarked)
+// In renderQuery, attach a click listener to scroll to the corresponding message
 function renderQuery(query) {
   const queryDiv = document.createElement("div");
   queryDiv.className = "query-card";
+  // Using the first line of the message for display; CSS can handle overflow styling.
   queryDiv.innerHTML = `
     <div class="query-timestamp">${formatDate(query.timestamp)}</div>
-    <div class="query-content">${query.content}</div>
+    <div class="query-content">${query.content.split('\n')[0]}</div>
   `;
+
+  queryDiv.addEventListener('click', () => {
+    const target = document.getElementById('message-' + query.id);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Optional: add a temporary highlight to the message
+      target.classList.add('highlight');
+      setTimeout(() => {
+        target.classList.remove('highlight');
+      }, 2000);
+    }
+  });
+
   queriesList.appendChild(queryDiv);
   queriesList.scrollTop = queriesList.scrollHeight;
 }
+
+
 
 // Function to bookmark an assistant's response
 function bookmarkResponse(message) {
@@ -107,10 +127,10 @@ messageForm.addEventListener("submit", async (e) => {
 
   const loadingMessage = {
     id: messages.length + 1,
-    content : "Typing...",
+    content: "Typing...",
     sender: "assistant",
     timestamp,
-    loader : true
+    loader: true,
   };
 
   messages.push(message);
@@ -137,9 +157,9 @@ messageForm.addEventListener("submit", async (e) => {
       content: renderedHTML, // Store HTML-rendered content
       sender: "assistant",
       timestamp: new Date().toISOString(),
-      loader: false
+      loader: false,
     };
-    document.getElementById("loading-message").remove()
+    document.getElementById("loading-message").remove();
     messages.push(botMessage);
     renderMessage(botMessage);
   } catch (error) {
@@ -149,12 +169,11 @@ messageForm.addEventListener("submit", async (e) => {
       sender: "assistant",
       timestamp: new Date().toISOString(),
     };
-    document.getElementById("loading-message").remove()
+    document.getElementById("loading-message").remove();
     messages.push(botMessage);
     renderMessage(botMessage);
   }
 });
-
 
 // Reset chat
 function resetChat() {
@@ -176,6 +195,7 @@ function displayWelcomeMessage() {
     timestamp: new Date().toISOString(),
   };
   renderMessage(welcomeMessage);
+  renderSuggestions();
 }
 
 document.addEventListener("DOMContentLoaded", displayWelcomeMessage);
@@ -202,25 +222,106 @@ document.querySelector(".expert-link").addEventListener("click", () => {
   const timestamp = new Date().toISOString();
   const loadingMessage = {
     id: messages.length + 1,
-    content : "Forwarding your request to an expert for review..",
+    content: "Forwarding your request to an expert for review..",
     sender: "assistant",
     timestamp,
-    loader : true
+    loader: true,
   };
-  renderMessage(loadingMessage)
+  renderMessage(loadingMessage);
   fetch("/ask-expert", { method: "POST" })
     .then((response) => response.json())
     .then((data) => {
       const newTimestamp = new Date().toISOString();
       const responseMessage = {
         id: messages.length + 1,
-        content : "Your request has been successfully sent to an expert! You'll receive a response soon.",
+        content:
+          "Your request has been successfully sent to an expert! You'll receive a response soon.",
         sender: "assistant",
         timestamp: newTimestamp,
-        loader : false
+        loader: false,
       };
-      document.getElementById("loading-message").remove()
-      renderMessage(responseMessage)
+      document.getElementById("loading-message").remove();
+      renderMessage(responseMessage);
     })
     .then((data) => alert(data.message));
 });
+
+if (SpeechRecognition) {
+  const recognition = new SpeechRecognition();
+  recognition.interimResults = false;
+  recognition.lang = "en-US";
+
+  voiceButton.addEventListener("click", () => {
+    messageInput.focus();
+    recognition.start();
+  });
+
+  // When the mic starts recording:
+  recognition.addEventListener("start", () => {
+    voiceButton.classList.add("recording");
+  });
+
+  // When the mic stops recording:
+  recognition.addEventListener("end", () => {
+    voiceButton.classList.remove("recording");
+  });
+
+  recognition.addEventListener("result", (event) => {
+    const transcript = event.results[0][0].transcript;
+    messageInput.value += (messageInput.value ? " " : "") + transcript;
+    voiceButton.style.display = "none";
+    messageInput.dispatchEvent(new Event('input'));
+  });
+} else {
+  console.warn("Speech Recognition not supported in this browser.");
+  voiceButton.style.display = "none";
+}
+
+// Define your suggestion queries
+const suggestions = [
+  "What guidelines ensure merchanting transactions comply with FX and trade policies?",
+  "How did the 20:80 principle shape India's gold trade, and what changed after its withdrawal?",
+  "What provisions enforce timely evidence submission and accountability?"
+];
+
+function renderSuggestions() {
+  const suggestionsList = document.getElementById("suggestionsList");
+  suggestions.forEach(suggestion => {
+    const suggestionDiv = document.createElement("div");
+    suggestionDiv.className = "suggestion-card";
+    suggestionDiv.innerHTML = `
+      <span class="suggestion-text">${suggestion}</span>
+      <button class="suggestion-arrow">
+        <i class="fa fa-arrow-right"></i>
+      </button>
+    `;
+    // Clicking the arrow button populates the text input with the suggestion
+    suggestionDiv.querySelector(".suggestion-arrow").addEventListener("click", (e) => {
+      e.stopPropagation(); // Prevent triggering parent click if any
+      messageInput.value = suggestion;
+      messageInput.focus();
+      messageInput.dispatchEvent(new Event('input'));
+    });
+    suggestionsList.appendChild(suggestionDiv);
+  });
+}
+
+// Listen for changes in the message input field
+messageInput.addEventListener("input", () => {
+  // Check if there's at least one non-whitespace character
+  if (messageInput.value.trim().length > 0) {
+    voiceButton.style.display = "none";
+  } else {
+    voiceButton.style.display = "inline-block";
+  }
+});
+
+window.addEventListener("load", () => {
+  // Check if the navigation type is "reload"
+  const [navEntry] = performance.getEntriesByType("navigation");
+  if (navEntry && navEntry.type === "reload") {
+    resetChat();
+  }
+});
+
+
