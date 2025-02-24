@@ -1,8 +1,9 @@
+import io
 import os
 import smtplib
 import firebase_admin
 from firebase_admin import credentials, firestore
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, session, send_file
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
@@ -107,48 +108,70 @@ def ask_question():
 
     return jsonify({"answer": answer})
 
-@app.route("/ask-expert", methods=["POST"])
-def ask_expert():
-    """Fetch conversation history, save it as a PDF, and email it to an expert."""
-    if "thread_id" not in session:
-        return jsonify({"message": "No conversation history found!"})
-
-    thread_id = session["thread_id"]
-    chat_logs = db.collection("chat_logs").where("thread_id", "==", thread_id).order_by("timestamp").stream()
-
-    pdf_filename = f"Chat_Log_Report_{thread_id}.pdf"
-
-    # Create a PDF document with proper formatting
-    doc = SimpleDocTemplate(pdf_filename, pagesize=letter)
+def generate_chat_pdf(thread_id, purpose):
+    """
+    Generate a PDF of the chat logs for the given thread_id.
+    Returns a BytesIO buffer containing the PDF.
+    """
+    pdf_buffer = io.BytesIO()
+    doc = SimpleDocTemplate(pdf_buffer, pagesize=letter)
     styles = getSampleStyleSheet()
     elements = []
+    
+    if purpose == "download" :
+        message = f"<b>Overview : </b> This document contains a detailed record of the user's interaction with the TradeGuru.<br/>It includes all the questions the user asked and the chatbot’s responses, providing a structured reference.<br/><br/><br/><br/>"
+    else :
+        message = f"<b>Overview : </b>This document contains a detailed record of the users interaction with the TradeGuru Chatbot. It includes all the questions the user asked and the chatbot’s responses, providing a structured reference for all the queries. This report has been generated as per our users request to get their questions answered by an expert.</p><br/><br/><br/><br/>"
 
-    # Add Title
-    elements.append(Paragraph(f"<b>Overview : </b>This document contains a detailed record of the uers interaction with the Trade Guru Chatbot. It includes all the questions the user asked and the chatbot’s responses, providing a structured reference for your queries related to election data. This report has been generated as per our users request to get their questions answered by an expert.</p><br/><br/><br/><br/>", styles["Normal"]))
+    # Add title/overview
+    elements.append(Paragraph(
+        message,
+        styles["Normal"]
+    ))
 
+    # Fetch chat logs and add entries
+    chat_logs = db.collection("chat_logs").where("thread_id", "==", thread_id).order_by("timestamp").stream()
     for log in chat_logs:
         data = log.to_dict()
-        
-        # Add User Message
         elements.append(Paragraph(f"<b>User:</b> {data['user_query']}", styles["Normal"]))
         elements.append(Paragraph(f"<b>Chatbot:</b> {data['assistant_response']}", styles["Normal"]))
-
-        # Add spacing
         elements.append(Paragraph("<br/><br/>", styles["Normal"]))
-
-    # Build PDF
+    
+    # Build the PDF into the buffer and reset the pointer to the beginning
     doc.build(elements)
+    pdf_buffer.seek(0)
+    return pdf_buffer
 
-    # Send Email
-    send_email(pdf_filename, EXPERT_EMAIL)
 
-    # Delete the PDF after sending
-    os.remove(pdf_filename)
+# New endpoint for downloading the PDF
+@app.route('/download-pdf', methods=['GET'])
+def download_pdf():
+    if "thread_id" not in session:
+        return jsonify({"message": "There has not been any conversation till now! Nothing to send to expert."})
+    thread_id = session["thread_id"]
+    
+    pdf_buffer = generate_chat_pdf(thread_id, "download")
+    return send_file(pdf_buffer,
+                     as_attachment=True,
+                     download_name='conversation.pdf',
+                     mimetype='application/pdf')
 
-    return jsonify({"message": "Conversation history sent to expert successfully!"})
 
-def send_email(pdf_filename, recipient_email):
-    """Send the conversation PDF via email."""
+@app.route('/ask-expert', methods=['POST'])
+def ask_expert():
+    if "thread_id" not in session:
+        return jsonify({"message": "There has not been any conversation till now! Nothing to send to expert."})
+    thread_id = session["thread_id"]
+    
+    pdf_buffer = generate_chat_pdf(thread_id, "expert")
+    pdf_bytes = pdf_buffer.getvalue()
+    send_email(pdf_bytes, EXPERT_EMAIL)  # Updated send_email to accept PDF bytes.
+    
+    return jsonify({"message": "Your conversation history has been successfully sent to an expert! You'll receive a response soon."})
+
+
+def send_email(pdf_data, recipient_email):
+    """Send the conversation PDF (provided as bytes) via email."""
     msg = MIMEMultipart()
     msg["From"] = EMAIL_SENDER
     msg["To"] = recipient_email
@@ -157,19 +180,19 @@ def send_email(pdf_filename, recipient_email):
     body = "Attached is the conversation history for expert review."
     msg.attach(MIMEText(body, "plain"))
 
-    attachment = open(pdf_filename, "rb")
     part = MIMEBase("application", "octet-stream")
-    part.set_payload(attachment.read())
+    part.set_payload(pdf_data)
     encoders.encode_base64(part)
-    part.add_header("Content-Disposition", f"attachment; filename={pdf_filename}")
+    # Provide a default filename for the attachment
+    part.add_header("Content-Disposition", 'attachment; filename="conversation.pdf"')
     msg.attach(part)
-    attachment.close()
 
     server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
     server.starttls()
     server.login(EMAIL_SENDER, EMAIL_PASSWORD)
     server.sendmail(EMAIL_SENDER, recipient_email, msg.as_string())
     server.quit()
+
 
 @app.route("/reset-session", methods=["POST"])
 def reset_session():

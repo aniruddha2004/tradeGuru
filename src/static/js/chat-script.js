@@ -139,7 +139,7 @@ messageForm.addEventListener("submit", async (e) => {
 
   messageInput.value = "";
   voiceButton.style.display = "inline-block";
-  
+
   try {
     const response = await fetch("/ask", {
       method: "POST",
@@ -235,16 +235,14 @@ document.querySelector(".expert-link").addEventListener("click", () => {
       const newTimestamp = new Date().toISOString();
       const responseMessage = {
         id: messages.length + 1,
-        content:
-          "Your request has been successfully sent to an expert! You'll receive a response soon.",
+        content: data.message,
         sender: "assistant",
         timestamp: newTimestamp,
         loader: false,
       };
       document.getElementById("loading-message").remove();
       renderMessage(responseMessage);
-    })
-    .then((data) => alert(data.message));
+    });
 });
 
 if (SpeechRecognition) {
@@ -254,15 +252,18 @@ if (SpeechRecognition) {
 
   voiceButton.addEventListener("click", () => {
     messageInput.focus();
-    recognition.start();
+    // Toggle the voice recording state
+    if (voiceButton.classList.contains("recording")) {
+      recognition.stop();
+    } else {
+      recognition.start();
+    }
   });
 
-  // When the mic starts recording:
   recognition.addEventListener("start", () => {
     voiceButton.classList.add("recording");
   });
 
-  // When the mic stops recording:
   recognition.addEventListener("end", () => {
     voiceButton.classList.remove("recording");
   });
@@ -270,13 +271,12 @@ if (SpeechRecognition) {
   recognition.addEventListener("result", (event) => {
     const transcript = event.results[0][0].transcript;
     messageInput.value += (messageInput.value ? " " : "") + transcript;
-    voiceButton.style.display = "none";
-    messageInput.dispatchEvent(new Event('input'));
   });
 } else {
   console.warn("Speech Recognition not supported in this browser.");
   voiceButton.style.display = "none";
 }
+
 
 // Define your suggestion queries
 const suggestions = [
@@ -325,5 +325,65 @@ window.addEventListener("load", () => {
     resetChat();
   }
 });
+
+document.getElementById('downloadPdfButton').addEventListener('click', async () => {
+  const timestamp = new Date().toISOString();
+  try {
+    const response = await fetch('/download-pdf');
+    const contentType = response.headers.get('Content-Type');
+
+    if (contentType && contentType.includes('application/json')) {
+      // The backend returned a JSON error message (no conversation found)
+      const data = await response.json();
+      const responseMessage = {
+        id: messages.length + 1,
+        content: data.message,
+        sender: "assistant",
+        timestamp,
+        loader: false,
+      };
+      renderMessage(responseMessage)
+    } else if (contentType && contentType.includes('application/pdf')) {
+      // The backend returned a PDF; proceed to download it
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'conversation.pdf';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      const responseMessage = {
+        id: messages.length + 1,
+        content: "PDF downloaded successfully!",
+        sender: "assistant",
+        timestamp,
+        loader: false,
+      };
+      renderMessage(responseMessage)
+    } else {
+      const responseMessage = {
+        id: messages.length + 1,
+        content: "An error occurred while downloading the PDF.",
+        sender: "assistant",
+        timestamp,
+        loader: false,
+      };
+      renderMessage(responseMessage)
+    }
+  } catch (error) {
+    console.error(error);
+    const responseMessage = {
+      id: messages.length + 1,
+      content: "An error occurred while downloading the PDF.",
+      sender: "assistant",
+      timestamp,
+      loader: false,
+    };
+    renderMessage(responseMessage)
+  }
+});
+
 
 
