@@ -138,7 +138,8 @@ messageForm.addEventListener("submit", async (e) => {
   renderMessage(loadingMessage);
 
   messageInput.value = "";
-
+  voiceButton.style.display = "inline-block";
+  
   try {
     const response = await fetch("/ask", {
       method: "POST",

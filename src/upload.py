@@ -10,12 +10,12 @@ import os
 load_dotenv()
 
 # Load document
-file_path = "C:/xampp/htdocs/PaperMind/src/EPS.txt"  # Change to your actual file path
+file_path = "C:/xampp/htdocs/PaperMind/src/TF.txt"  # Change to your actual file path
 loader = TextLoader(file_path, encoding="utf-8")
 documents = loader.load()
 
 for doc in documents:
-    doc.metadata["source"] = "Export Promotion Schemes"
+    doc.metadata["source"] = "Beginners guide to Trade Finance"
 
 # Split text into chunks
 text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
