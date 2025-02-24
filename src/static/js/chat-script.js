@@ -196,7 +196,7 @@ function displayWelcomeMessage() {
   };
   renderMessage(welcomeMessage);
   renderSuggestions();
-}
+ }
 
 document.addEventListener("DOMContentLoaded", displayWelcomeMessage);
 
@@ -286,6 +286,7 @@ const suggestions = [
 
 function renderSuggestions() {
   const suggestionsList = document.getElementById("suggestionsList");
+  suggestionsList.innerHTML = '';
   suggestions.forEach(suggestion => {
     const suggestionDiv = document.createElement("div");
     suggestionDiv.className = "suggestion-card";

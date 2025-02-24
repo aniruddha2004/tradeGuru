@@ -173,16 +173,17 @@ def send_email(pdf_filename, recipient_email):
 
 @app.route("/reset-session", methods=["POST"])
 def reset_session():
-    thread_id = session["thread_id"]
-    # Query documents with matching `thread_id`
-    chat_logs = db.collection("chat_logs").where("thread_id", "==", thread_id).stream()
+    if "thread_id" in session :
+        thread_id = session["thread_id"]
+        # Query documents with matching `thread_id`
+        chat_logs = db.collection("chat_logs").where("thread_id", "==", thread_id).stream()
 
-    # Iterate and delete each document
-    for doc in chat_logs:
-        print(f"Deleting document {doc.id}")  # Optional: To check which docs are deleted
-        db.collection("chat_logs").document(doc.id).delete()
-    
-    session.pop("thread_id", None)
+        # Iterate and delete each document
+        for doc in chat_logs:
+            print(f"Deleting document {doc.id}")  # Optional: To check which docs are deleted
+            db.collection("chat_logs").document(doc.id).delete()
+        
+        session.pop("thread_id", None)
     return jsonify({"message": "Session reset successfully!"})
 
 # Custom 404 Error Handler

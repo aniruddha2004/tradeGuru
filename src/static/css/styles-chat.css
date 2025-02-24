@@ -138,6 +138,7 @@ body {
   display: flex;
   flex-direction: column;
   transition: transform 0.3s ease;
+  overflow-y: auto;
 }
 
 .queries-title {
@@ -151,7 +152,6 @@ body {
 
 .queries-list {
   flex: 1;
-  overflow-y: auto;
   padding-right: 0.5rem;
 }
 
