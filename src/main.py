@@ -1,5 +1,6 @@
 import io
 import os
+import requests
 import smtplib
 import firebase_admin
 from firebase_admin import credentials, firestore
@@ -12,8 +13,6 @@ from langchain.agents.openai_assistant import OpenAIAssistantRunnable
 from langchain.agents import AgentExecutor
 from langchain_community.tools import TavilySearchResults
 from langchain.tools import Tool
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_milvus import Milvus
 from dotenv import load_dotenv
 import datetime
 from reportlab.lib.pagesizes import letter
@@ -44,23 +43,37 @@ EMAIL_SENDER = os.getenv("EMAIL_SENDER")  # Your email
 EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")  # Your email app password
 EXPERT_EMAIL = os.getenv("EXPERT_EMAIL")  # Expert email where queries will be sent
 
-# Initialize Tavily Web Search tool
-tavily_tool = TavilySearchResults()
+def supavec_retriever(query):
+    # Retrieve multiple file ids from environment variable and convert to an array
+    file_ids_str = os.getenv("SUPAVEC_FILE_IDS") 
+    file_ids = [fid.strip() for fid in file_ids_str.split(";") if fid.strip()]
+    
+    api_key = os.getenv("SUPAVEC_API_KEY")  # Your supavec API key from .env
+    
+    url = os.getenv("SUPAVEC_RETREIVER_URL")
+    headers = {
+        "Content-Type": "application/json",
+        "authorization": api_key,
+    }
+    payload = {"query": query, "file_ids": file_ids}
+    
+    response = requests.post(url, json=payload, headers=headers)
+    if response.status_code == 200:
+        # Process and return the JSON response from supavec as needed
+        return response.json()
+    else:
+        # Handle errors appropriately (you might want to raise an exception or return an error dict)
+        return {"error": response.text}
 
-# Initialize Hugging Face Embeddings
-embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-
-# Initialize Milvus (Zilliz Vector Database)
-vector_db = Milvus(
-    embedding_function=embeddings,
-    connection_args={"uri": os.getenv("ZILLIZ_CLOUD_URI"), "user": os.getenv("ZILLIZ_CLOUD_USERNAME"), "password": os.getenv("ZILLIZ_CLOUD_PASSWORD"), "secure": True},
-    collection_name=os.getenv("DB_COLLECTION_NAME"),
-    text_field="text"
+# Create a new retrieval tool using the supavec API function
+retrieval_tool = Tool(
+    name="DB_Retrieval",
+    func=supavec_retriever,
+    description="Retrieve answers based on user user query using the supavec API."
 )
 
-# Define a retrieval tool for querying the vector database
-retriever = vector_db.as_retriever()
-retrieval_tool = Tool(name="DB_Retrieval", func=retriever.get_relevant_documents, description="Retrieve answers from the database.")
+# Initialize Tavily Web Search tool
+tavily_tool = TavilySearchResults()
 
 # Define Tavily search as another tool
 web_search_tool = Tool(name="Web_Search", func=tavily_tool.invoke, description="Search the web for additional context.")
