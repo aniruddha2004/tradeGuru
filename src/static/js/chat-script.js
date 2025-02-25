@@ -126,9 +126,6 @@ function removeBookmark(message) {
   queries.forEach((q) => renderQuery(q));
 }
 
-
-
-
 function sendFeedback(docId, feedback) {
   fetch("/feedback", {
     method: "POST",
@@ -205,7 +202,7 @@ messageForm.addEventListener("submit", async (e) => {
 
   const loadingMessage = {
     id: messages.length + 1,
-    content: "Typing...",
+    content: '<span class="typing-text">Typing</span><span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>',
     sender: "assistant",
     timestamp,
     loader: true,
@@ -302,7 +299,7 @@ document.querySelector(".expert-link").addEventListener("click", () => {
   const timestamp = new Date().toISOString();
   const loadingMessage = {
     id: messages.length + 1,
-    content: "Forwarding your request to an expert for review..",
+    content: '<span class="typing-text">Forwarding your request to an expert for review</span><span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>',
     sender: "assistant",
     timestamp,
     loader: true,
@@ -469,6 +466,3 @@ document.getElementById('downloadPdfButton').addEventListener('click', async () 
     renderMessage(responseMessage)
   }
 });
-
-
-
