@@ -6,6 +6,7 @@ firebase-admin-sdk.json
 virtual/
 venv/
 diagrams/
+.vercel/
 __pycache__/
 *.pyc
 *.pyo
