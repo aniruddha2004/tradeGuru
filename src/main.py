@@ -18,7 +18,7 @@ import datetime
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
-from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Paragraph
 from reportlab.lib.units import inch
 
@@ -122,10 +122,30 @@ def ask_question():
     answer = response["output"]
     thread_id = session["thread_id"]
 
-    log_data = {"thread_id": thread_id, "user_query": question, "assistant_response": answer, "timestamp": datetime.datetime.utcnow()}
-    db.collection("chat_logs").add(log_data)
+    log_data = {"thread_id": thread_id, "user_query": question, "assistant_response": answer, "feedback": "neutral", "timestamp": datetime.datetime.utcnow()}
+    # Capture the document reference to get its id.
+    _, doc_ref = db.collection("chat_logs").add(log_data)
+    doc_id = doc_ref.id
 
-    return jsonify({"answer": answer})
+    return jsonify({"answer": answer, "doc_id": doc_id})
+
+@app.route("/feedback", methods=["POST"])
+def update_feedback():
+    data = request.get_json()
+    doc_id = data.get("doc_id")
+    feedback_value = data.get("feedback")
+    
+    if not doc_id or feedback_value not in ("positive", "negative"):
+        return jsonify({"error": "Invalid request."}), 400
+
+    try:
+        db.collection("chat_logs").document(doc_id).update({"feedback": feedback_value})
+        return jsonify({"message": "Feedback updated successfully."})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+from reportlab.lib.styles import ParagraphStyle  # Ensure this import is present
 
 def generate_chat_pdf(thread_id, purpose):
     """
@@ -133,35 +153,80 @@ def generate_chat_pdf(thread_id, purpose):
     Returns a BytesIO buffer containing the PDF.
     """
     pdf_buffer = io.BytesIO()
-    doc = SimpleDocTemplate(pdf_buffer, pagesize=letter)
+    # Set margins for a nicer layout.
+    doc = SimpleDocTemplate(pdf_buffer, pagesize=letter,
+                            rightMargin=72, leftMargin=72,
+                            topMargin=72, bottomMargin=72)
     styles = getSampleStyleSheet()
+    
+    # Define a style for the overview/title.
+    overview_style = ParagraphStyle(
+        "Overview",
+        parent=styles["Normal"],
+        fontName="Helvetica-Bold",
+        fontSize=12,
+        leading=14,
+        spaceAfter=12,
+    )
+    
+    # Define a style for chat entries.
+    chat_entry_style = ParagraphStyle(
+        "ChatEntry",
+        parent=styles["Normal"],
+        fontName="Helvetica",
+        fontSize=10,
+        leading=12,
+        spaceAfter=6,
+    )
+    
+    # Define a style for negative feedback entries.
+    negative_chat_entry_style = ParagraphStyle(
+        "NegativeChatEntry",
+        parent=chat_entry_style,
+        textColor="red",
+    )
+    
     elements = []
     
-    if purpose == "download" :
-        message = f"<b>Overview : </b> This document contains a detailed record of the your interaction with TradeGuru.<br/>It includes all the questions you asked and TradeGuru's responses, for your reference.<br/><br/><br/><br/>"
+    if purpose == "download":
+        message = (
+            "<b>Overview :</b><br/>This document contains a detailed record of your interaction with TradeGuru.<br/>"
+            "It includes all the questions you asked and TradeGuru's responses, for your reference.<br/><br/><br/><br/>"
+        )
         tags = ["You", "TradeGuru"]
-    else :
-        message = f"<b>Overview : </b>This document contains a detailed record of the users interaction with the TradeGuru Chatbot. It includes all the questions the user asked and the chatbot’s responses, providing a structured reference for all the queries. This report has been generated as per our users request to get their questions answered by an expert.</p><br/><br/><br/><br/>"
+        overview = Paragraph(message, overview_style)
+    else:
+        message = (
+            "<b>Overview :</b><br/>This document contains a detailed record of the user's interaction with the TradeGuru Chatbot. "
+            "It includes all the questions the user asked and the chatbot’s responses, providing a structured reference for all the queries. "
+            "This report has been generated as per our user's request to get their questions answered by an expert.<br/><br/><br/><br/>"
+        )
         tags = ["Query", "Response"]
-
-    # Add title/overview
-    elements.append(Paragraph(
-        message,
-        styles["Normal"]
-    ))
-
-    # Fetch chat logs and add entries
+        overview = Paragraph(message, overview_style)
+    
+    elements.append(overview)
+    
+    # Fetch chat logs and add entries.
     chat_logs = db.collection("chat_logs").where("thread_id", "==", thread_id).order_by("timestamp").stream()
     for log in chat_logs:
         data = log.to_dict()
-        elements.append(Paragraph(f"<b>{tags[0]} : </b> {data['user_query']}", styles["Normal"]))
-        elements.append(Paragraph(f"<b>{tags[1]} : </b> {data['assistant_response']}", styles["Normal"]))
-        elements.append(Paragraph("<br/><br/>", styles["Normal"]))
+        # For expert purpose, if feedback is negative, use the negative style.
+        if purpose == "expert" and data.get("feedback", "neutral") == "negative":
+            user_style = negative_chat_entry_style
+            assistant_style = negative_chat_entry_style
+        else:
+            user_style = chat_entry_style
+            assistant_style = chat_entry_style
+        
+        elements.append(Paragraph(f"<b>{tags[0]} :</b> {data['user_query']}", user_style))
+        elements.append(Paragraph(f"<b>{tags[1]} :</b> {data['assistant_response']}", assistant_style))
+        elements.append(Paragraph("<br/><br/>", chat_entry_style))
     
-    # Build the PDF into the buffer and reset the pointer to the beginning
+    # Build the PDF into the buffer and reset the pointer to the beginning.
     doc.build(elements)
     pdf_buffer.seek(0)
     return pdf_buffer
+
 
 
 # New endpoint for downloading the PDF

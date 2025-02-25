@@ -33,7 +33,6 @@ function formatTime(date) {
   }).format(new Date(date));
 }
 
-// In renderMessage, assign a unique id to each message
 function renderMessage(message) {
   const messageDiv = document.createElement("div");
   messageDiv.className = `message ${message.sender}`;
@@ -48,25 +47,104 @@ function renderMessage(message) {
   } else {
     messageDiv.innerHTML = `
       <div class="message-content">
-        <div>${message.content}</div>
+        <!-- Main text -->
+        <div class="message-text">${message.content}</div>
+        <!-- Time at the bottom-right (optional) -->
         <div class="message-time">${formatTime(message.timestamp)}</div>
       </div>
     `;
   }
 
-  // Add bookmark button for assistant messages
+  // For assistant messages (non-loading), add bookmark, thumbs up, and thumbs down.
   if (message.sender === "assistant" && !message.loader) {
+    const buttonContainer = document.createElement("div");
+    buttonContainer.className = "button-container";
+
+    // Bookmark button (remains toggleable)
     const bookmarkButton = document.createElement("button");
-    bookmarkButton.className = "bookmark-button";
-    bookmarkButton.innerHTML =
-      '<i class="fa fa-bookmark-o" style="color: rgba(17,25,44,255)"></i>';
-    bookmarkButton.addEventListener("click", () => bookmarkResponse(message));
-    messageDiv.appendChild(bookmarkButton);
+    bookmarkButton.className = "icon-button bookmark-button";
+    bookmarkButton.innerHTML = '<i class="fa fa-bookmark-o"></i>';
+    bookmarkButton.addEventListener("click", () => {
+      if (bookmarkButton.classList.contains("selected")) {
+        // Already bookmarked – remove bookmark.
+        removeBookmark(message);
+        bookmarkButton.classList.remove("selected");
+      } else {
+        // Not bookmarked – add bookmark.
+        bookmarkResponse(message);
+        bookmarkButton.classList.add("selected");
+      }
+    });
+    
+
+    // Thumbs Up button: only select if not already selected
+    const thumbsUpButton = document.createElement("button");
+    thumbsUpButton.className = "icon-button bookmark-button";
+    thumbsUpButton.innerHTML = '<i class="fa fa-thumbs-up"></i>';
+    thumbsUpButton.addEventListener("click", () => {
+      if (!thumbsUpButton.classList.contains("selected")) {
+        sendFeedback(message.docId, "positive");
+        thumbsUpButton.classList.add("selected");
+        thumbsDownButton.classList.remove("selected");
+      }
+      // If already selected, do nothing.
+    });
+
+    // Thumbs Down button: only select if not already selected
+    const thumbsDownButton = document.createElement("button");
+    thumbsDownButton.className = "icon-button bookmark-button";
+    thumbsDownButton.innerHTML = '<i class="fa fa-thumbs-down"></i>';
+    thumbsDownButton.addEventListener("click", () => {
+      if (!thumbsDownButton.classList.contains("selected")) {
+        sendFeedback(message.docId, "negative");
+        thumbsDownButton.classList.add("selected");
+        thumbsUpButton.classList.remove("selected");
+      }
+      // If already selected, do nothing.
+    });
+
+    buttonContainer.appendChild(bookmarkButton);
+    buttonContainer.appendChild(thumbsUpButton);
+    buttonContainer.appendChild(thumbsDownButton);
+
+    // Append the button container at the bottom of .message-content
+    messageDiv.querySelector(".message-content").appendChild(buttonContainer);
   }
 
   messagesContainer.appendChild(messageDiv);
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
+
+function removeBookmark(message) {
+  // Remove the bookmarked message from the queries array.
+  queries = queries.filter((q) => q.id !== message.id);
+
+  // Clear the current bookmarks list.
+  queriesList.innerHTML = '';
+
+  // Re-render the remaining bookmarks.
+  queries.forEach((q) => renderQuery(q));
+}
+
+
+
+
+function sendFeedback(docId, feedback) {
+  fetch("/feedback", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ doc_id: docId, feedback: feedback })
+  })
+  .then(response => response.json())
+  .then(data => {
+    console.log(data.message); // Optionally display a confirmation message
+  })
+  .catch(error => {
+    console.error("Error updating feedback:", error);
+  });
+}
+
+
 
 // In renderQuery, attach a click listener to scroll to the corresponding message
 function renderQuery(query) {
@@ -155,6 +233,7 @@ messageForm.addEventListener("submit", async (e) => {
 
     const botMessage = {
       id: messages.length + 1,
+      docId: data.doc_id,
       content: renderedHTML, // Store HTML-rendered content
       sender: "assistant",
       timestamp: new Date().toISOString(),
