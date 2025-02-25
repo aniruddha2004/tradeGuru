@@ -418,6 +418,42 @@ ul, ol {
   color: #2563eb; /* or any color you prefer for "pressed" state */
 }
 
+.typing-text {
+  /* This animation can be used to add a subtle fade effect to the text */
+  animation: fadeIn 2s infinite;
+}
+
+.dot {
+  opacity: 0;
+  margin-left: 2px;
+  animation: blink 1.5s infinite;
+}
+
+/* Stagger the animation for each dot */
+.dot:nth-child(2) {
+  animation-delay: 0.3s;
+}
+.dot:nth-child(3) {
+  animation-delay: 0.6s;
+}
+.dot:nth-child(4) {
+  animation-delay: 0.9s;
+}
+
+/* Keyframe for fading the text in/out */
+@keyframes fadeIn {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
+/* Keyframe for dot blinking */
+@keyframes blink {
+  0% { opacity: 0; }
+  50% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+
 /* Mobile Responsive Styles */
 @media (max-width: 768px) {
   .navbar {
