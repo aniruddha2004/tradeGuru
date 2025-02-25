@@ -229,11 +229,14 @@ body {
 }
 
 .message-content {
+  display: flex;
+  flex-direction: column;
   padding: 0.75rem 1rem;
   border-radius: 1rem;
   position: relative;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
+
 
 ul, ol {
   padding-left: 1rem;
@@ -386,47 +389,33 @@ ul, ol {
   text-decoration: underline;
 }
 
-/* Bookmark Button Styling */
+/* Container for all three buttons placed at the bottom of the message */
+.button-container {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-start;
+  gap: 10px;
+}
+
+/* Reuse the bookmark button styles for all buttons */
 .bookmark-button {
   background-color: transparent;
   border: none;
-  color: #f39c12; /* Golden yellow for contrast */
+  color: rgba(24, 34, 52, 255); /* Golden yellow for contrast */
   font-size: 16px;
   cursor: pointer;
   transition: transform 0.2s ease-in-out, color 0.2s ease-in-out;
-  margin-left: 10px;
   padding: 5px;
   border-radius: 5px;
 }
 
 /* Hover Effect */
 .bookmark-button:hover {
-  color: #d35400; /* A deeper orange on hover */
   transform: scale(1.2);
 }
 
-/* Click Effect */
-.bookmark-button:active {
-  transform: scale(0.9);
-}
-
-.loading-animation {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 6px;
-  padding: 12px;
-  font-size: 24px;
-}
-
-@keyframes blink {
-  0%,
-  100% {
-    opacity: 0.3;
-  }
-  50% {
-    opacity: 1;
-  }
+.bookmark-button.selected i {
+  color: #2563eb; /* or any color you prefer for "pressed" state */
 }
 
 /* Mobile Responsive Styles */
