@@ -5,6 +5,7 @@ firebase-admin-sdk.json
 # Ignore virtual environment
 virtual/
 venv/
+diagrams/
 __pycache__/
 *.pyc
 *.pyo

@@ -85,6 +85,12 @@ def landing_page():
 def chat_page():
     return render_template("chat.html")
 
+@app.route("/suggestions", methods=["GET"])
+def get_suggestions():
+    suggestions_string = os.getenv("SUGGESTIONS", "")
+    suggestions_list = suggestions_string.split(";") if suggestions_string else []
+    return jsonify({"suggestions": suggestions_list})
+
 @app.route("/ask", methods=["POST"])
 def ask_question():
     data = request.get_json()
@@ -119,9 +125,11 @@ def generate_chat_pdf(thread_id, purpose):
     elements = []
     
     if purpose == "download" :
-        message = f"<b>Overview : </b> This document contains a detailed record of the user's interaction with the TradeGuru.<br/>It includes all the questions the user asked and the chatbot’s responses, providing a structured reference.<br/><br/><br/><br/>"
+        message = f"<b>Overview : </b> This document contains a detailed record of the your interaction with TradeGuru.<br/>It includes all the questions you asked and TradeGuru's responses, for your reference.<br/><br/><br/><br/>"
+        tags = ["You", "TradeGuru"]
     else :
         message = f"<b>Overview : </b>This document contains a detailed record of the users interaction with the TradeGuru Chatbot. It includes all the questions the user asked and the chatbot’s responses, providing a structured reference for all the queries. This report has been generated as per our users request to get their questions answered by an expert.</p><br/><br/><br/><br/>"
+        tags = ["Query", "Response"]
 
     # Add title/overview
     elements.append(Paragraph(
@@ -133,8 +141,8 @@ def generate_chat_pdf(thread_id, purpose):
     chat_logs = db.collection("chat_logs").where("thread_id", "==", thread_id).order_by("timestamp").stream()
     for log in chat_logs:
         data = log.to_dict()
-        elements.append(Paragraph(f"<b>User:</b> {data['user_query']}", styles["Normal"]))
-        elements.append(Paragraph(f"<b>Chatbot:</b> {data['assistant_response']}", styles["Normal"]))
+        elements.append(Paragraph(f"<b>{tags[0]} : </b> {data['user_query']}", styles["Normal"]))
+        elements.append(Paragraph(f"<b>{tags[1]} : </b> {data['assistant_response']}", styles["Normal"]))
         elements.append(Paragraph("<br/><br/>", styles["Normal"]))
     
     # Build the PDF into the buffer and reset the pointer to the beginning

@@ -196,7 +196,7 @@ function displayWelcomeMessage() {
     timestamp: new Date().toISOString(),
   };
   renderMessage(welcomeMessage);
-  renderSuggestions();
+  fetchSuggestions();
  }
 
 document.addEventListener("DOMContentLoaded", displayWelcomeMessage);
@@ -279,11 +279,17 @@ if (SpeechRecognition) {
 
 
 // Define your suggestion queries
-const suggestions = [
-  "What guidelines ensure merchanting transactions comply with FX and trade policies?",
-  "How did the 20:80 principle shape India's gold trade, and what changed after its withdrawal?",
-  "What provisions enforce timely evidence submission and accountability?"
-];
+let suggestions = [];
+
+function fetchSuggestions() {
+  fetch('/suggestions')
+    .then(response => response.json())
+    .then(data => {
+      suggestions = data.suggestions;
+      renderSuggestions();  // update your UI with the fetched suggestions
+    })
+    .catch(error => console.error('Error fetching suggestions:', error));
+}
 
 function renderSuggestions() {
   const suggestionsList = document.getElementById("suggestionsList");
