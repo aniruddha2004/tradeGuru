@@ -5,7 +5,8 @@ let queries = [];
 // DOM Elements
 const messageForm = document.getElementById("messageForm");
 const messageInput = document.getElementById("messageInput");
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const SpeechRecognition =
+  window.SpeechRecognition || window.webkitSpeechRecognition;
 const voiceButton = document.getElementById("voiceButton");
 const messagesContainer = document.getElementById("messagesContainer");
 const queriesList = document.getElementById("queriesList");
@@ -75,7 +76,6 @@ function renderMessage(message) {
         bookmarkButton.classList.add("selected");
       }
     });
-    
 
     // Thumbs Up button: only select if not already selected
     const thumbsUpButton = document.createElement("button");
@@ -120,7 +120,7 @@ function removeBookmark(message) {
   queries = queries.filter((q) => q.id !== message.id);
 
   // Clear the current bookmarks list.
-  queriesList.innerHTML = '';
+  queriesList.innerHTML = "";
 
   // Re-render the remaining bookmarks.
   queries.forEach((q) => renderQuery(q));
@@ -130,18 +130,16 @@ function sendFeedback(docId, feedback) {
   fetch("/feedback", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ doc_id: docId, feedback: feedback })
+    body: JSON.stringify({ doc_id: docId, feedback: feedback }),
   })
-  .then(response => response.json())
-  .then(data => {
-    console.log(data.message); // Optionally display a confirmation message
-  })
-  .catch(error => {
-    console.error("Error updating feedback:", error);
-  });
+    .then((response) => response.json())
+    .then((data) => {
+      console.log(data.message); // Optionally display a confirmation message
+    })
+    .catch((error) => {
+      console.error("Error updating feedback:", error);
+    });
 }
-
-
 
 // In renderQuery, attach a click listener to scroll to the corresponding message
 function renderQuery(query) {
@@ -150,17 +148,17 @@ function renderQuery(query) {
   // Using the first line of the message for display; CSS can handle overflow styling.
   queryDiv.innerHTML = `
     <div class="query-timestamp">${formatDate(query.timestamp)}</div>
-    <div class="query-content">${query.content.split('\n')[0]}</div>
+    <div class="query-content">${query.content.split("\n")[0]}</div>
   `;
 
-  queryDiv.addEventListener('click', () => {
-    const target = document.getElementById('message-' + query.id);
+  queryDiv.addEventListener("click", () => {
+    const target = document.getElementById("message-" + query.id);
     if (target) {
-      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
       // Optional: add a temporary highlight to the message
-      target.classList.add('highlight');
+      target.classList.add("highlight");
       setTimeout(() => {
-        target.classList.remove('highlight');
+        target.classList.remove("highlight");
       }, 2000);
     }
   });
@@ -168,8 +166,6 @@ function renderQuery(query) {
   queriesList.appendChild(queryDiv);
   queriesList.scrollTop = queriesList.scrollHeight;
 }
-
-
 
 // Function to bookmark an assistant's response
 function bookmarkResponse(message) {
@@ -202,7 +198,8 @@ messageForm.addEventListener("submit", async (e) => {
 
   const loadingMessage = {
     id: messages.length + 1,
-    content: '<span class="typing-text">Typing</span><span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>',
+    content:
+      '<span class="typing-text">Typing</span><span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>',
     sender: "assistant",
     timestamp,
     loader: true,
@@ -213,7 +210,7 @@ messageForm.addEventListener("submit", async (e) => {
   renderMessage(loadingMessage);
 
   messageInput.value = "";
-  voiceButton.style.display = "inline-block";
+  messageInput.dispatchEvent(new Event("input"));
 
   try {
     const response = await fetch("/ask", {
@@ -273,7 +270,7 @@ function displayWelcomeMessage() {
   };
   renderMessage(welcomeMessage);
   fetchSuggestions();
- }
+}
 
 document.addEventListener("DOMContentLoaded", displayWelcomeMessage);
 
@@ -299,7 +296,8 @@ document.querySelector(".expert-link").addEventListener("click", () => {
   const timestamp = new Date().toISOString();
   const loadingMessage = {
     id: messages.length + 1,
-    content: '<span class="typing-text">Forwarding your request to an expert for review</span><span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>',
+    content:
+      '<span class="typing-text">Forwarding your request to an expert for review</span><span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>',
     sender: "assistant",
     timestamp,
     loader: true,
@@ -321,56 +319,64 @@ document.querySelector(".expert-link").addEventListener("click", () => {
     });
 });
 
-if (SpeechRecognition) {
-  const recognition = new SpeechRecognition();
+if (window.SpeechRecognition || window.webkitSpeechRecognition) {
+  const recognition = new (window.SpeechRecognition ||
+    window.webkitSpeechRecognition)();
   recognition.interimResults = false;
   recognition.lang = "en-US";
 
-  voiceButton.addEventListener("click", () => {
-    messageInput.focus();
-    // Toggle the voice recording state
+  voiceButton.addEventListener("click", (e) => {
+    // If the button is set to submit (send mode), do nothing here
+    if (voiceButton.getAttribute("type") === "submit") {
+      return; // Allow the form's submit event to handle the action.
+    }
+    // Otherwise, in mic mode, handle voice recognition
     if (voiceButton.classList.contains("recording")) {
       recognition.stop();
     } else {
       recognition.start();
     }
   });
+  
 
   recognition.addEventListener("start", () => {
+    // Button goes into recording mode
     voiceButton.classList.add("recording");
   });
 
   recognition.addEventListener("end", () => {
+    // Button stops recording mode
     voiceButton.classList.remove("recording");
   });
 
   recognition.addEventListener("result", (event) => {
     const transcript = event.results[0][0].transcript;
     messageInput.value += (messageInput.value ? " " : "") + transcript;
+    // Force the icon to update to "send" if text is present
+    messageInput.dispatchEvent(new Event("input"));
   });
 } else {
-  console.warn("Speech Recognition not supported in this browser.");
+  // Fallback if SpeechRecognition is not supported
   voiceButton.style.display = "none";
 }
-
 
 // Define your suggestion queries
 let suggestions = [];
 
 function fetchSuggestions() {
-  fetch('/suggestions')
-    .then(response => response.json())
-    .then(data => {
+  fetch("/suggestions")
+    .then((response) => response.json())
+    .then((data) => {
       suggestions = data.suggestions;
-      renderSuggestions();  // update your UI with the fetched suggestions
+      renderSuggestions(); // update your UI with the fetched suggestions
     })
-    .catch(error => console.error('Error fetching suggestions:', error));
+    .catch((error) => console.error("Error fetching suggestions:", error));
 }
 
 function renderSuggestions() {
   const suggestionsList = document.getElementById("suggestionsList");
-  suggestionsList.innerHTML = '';
-  suggestions.forEach(suggestion => {
+  suggestionsList.innerHTML = "";
+  suggestions.forEach((suggestion) => {
     const suggestionDiv = document.createElement("div");
     suggestionDiv.className = "suggestion-card";
     suggestionDiv.innerHTML = `
@@ -380,23 +386,54 @@ function renderSuggestions() {
       </button>
     `;
     // Clicking the arrow button populates the text input with the suggestion
-    suggestionDiv.querySelector(".suggestion-arrow").addEventListener("click", (e) => {
-      e.stopPropagation(); // Prevent triggering parent click if any
-      messageInput.value = suggestion;
-      messageInput.focus();
-      messageInput.dispatchEvent(new Event('input'));
-    });
+    suggestionDiv
+      .querySelector(".suggestion-arrow")
+      .addEventListener("click", (e) => {
+        e.stopPropagation(); // Prevent triggering parent click if any
+        messageInput.value = suggestion;
+        messageInput.focus();
+        messageInput.dispatchEvent(new Event("input"));
+      });
     suggestionsList.appendChild(suggestionDiv);
   });
 }
 
-// Listen for changes in the message input field
+// 1. Define your mic and up-arrow icons as strings
+const micIcon = `
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" 
+     viewBox="0 0 16 16">
+  <path d="M8 10a2 2 0 0 0 2-2V4a2 2 0 1 
+           0-4 0v4a2 2 0 0 0 2 2z" />
+  <path d="M3 7a5 5 0 0 0 10 0h1a6 6 0 
+           0 1-5 5.917V15H7v-2.083A6 6 0 
+           0 1 2 7h1z" />
+</svg>`;
+
+const upArrowIcon = `
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="34"
+  height="34"
+  viewBox="0 0 24 24"
+>
+  <circle cx="12" cy="12" r="10" fill="currentColor"/>
+  <path d="M12 8 L16 12 H13 V16 H11 V12 H8 L12 8 Z" fill="#fff"/>
+</svg>`;
+
+// 2. Listen for input changes
 messageInput.addEventListener("input", () => {
-  // Check if there's at least one non-whitespace character
-  if (messageInput.value.trim().length > 0) {
-    voiceButton.style.display = "none";
+  const hasText = messageInput.value.trim().length > 0;
+
+  if (hasText) {
+    // Switch to up-arrow (submit)
+    voiceButton.innerHTML = upArrowIcon;
+    voiceButton.title = "Send";
+    voiceButton.setAttribute("type", "submit");
   } else {
-    voiceButton.style.display = "inline-block";
+    // Switch back to mic
+    voiceButton.innerHTML = micIcon;
+    voiceButton.title = "Speak";
+    voiceButton.setAttribute("type", "button");
   }
 });
 
@@ -408,43 +445,56 @@ window.addEventListener("load", () => {
   }
 });
 
-document.getElementById('downloadPdfButton').addEventListener('click', async () => {
-  const timestamp = new Date().toISOString();
-  try {
-    const response = await fetch('/download-pdf');
-    const contentType = response.headers.get('Content-Type');
+document
+  .getElementById("downloadPdfButton")
+  .addEventListener("click", async () => {
+    const timestamp = new Date().toISOString();
+    try {
+      const response = await fetch("/download-pdf");
+      const contentType = response.headers.get("Content-Type");
 
-    if (contentType && contentType.includes('application/json')) {
-      // The backend returned a JSON error message (no conversation found)
-      const data = await response.json();
-      const responseMessage = {
-        id: messages.length + 1,
-        content: data.message,
-        sender: "assistant",
-        timestamp,
-        loader: false,
-      };
-      renderMessage(responseMessage)
-    } else if (contentType && contentType.includes('application/pdf')) {
-      // The backend returned a PDF; proceed to download it
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'conversation.pdf';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-      const responseMessage = {
-        id: messages.length + 1,
-        content: "PDF downloaded successfully!",
-        sender: "assistant",
-        timestamp,
-        loader: false,
-      };
-      renderMessage(responseMessage)
-    } else {
+      if (contentType && contentType.includes("application/json")) {
+        // The backend returned a JSON error message (no conversation found)
+        const data = await response.json();
+        const responseMessage = {
+          id: messages.length + 1,
+          content: data.message,
+          sender: "assistant",
+          timestamp,
+          loader: false,
+        };
+        renderMessage(responseMessage);
+      } else if (contentType && contentType.includes("application/pdf")) {
+        // The backend returned a PDF; proceed to download it
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "conversation.pdf";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+        const responseMessage = {
+          id: messages.length + 1,
+          content: "PDF downloaded successfully!",
+          sender: "assistant",
+          timestamp,
+          loader: false,
+        };
+        renderMessage(responseMessage);
+      } else {
+        const responseMessage = {
+          id: messages.length + 1,
+          content: "An error occurred while downloading the PDF.",
+          sender: "assistant",
+          timestamp,
+          loader: false,
+        };
+        renderMessage(responseMessage);
+      }
+    } catch (error) {
+      console.error(error);
       const responseMessage = {
         id: messages.length + 1,
         content: "An error occurred while downloading the PDF.",
@@ -452,17 +502,6 @@ document.getElementById('downloadPdfButton').addEventListener('click', async () 
         timestamp,
         loader: false,
       };
-      renderMessage(responseMessage)
+      renderMessage(responseMessage);
     }
-  } catch (error) {
-    console.error(error);
-    const responseMessage = {
-      id: messages.length + 1,
-      content: "An error occurred while downloading the PDF.",
-      sender: "assistant",
-      timestamp,
-      loader: false,
-    };
-    renderMessage(responseMessage)
-  }
-});
+  });
