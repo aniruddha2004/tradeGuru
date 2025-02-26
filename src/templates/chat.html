@@ -85,7 +85,7 @@
           <div class="bottom-container">
             <div class="input-container">
               <form class="input-form" id="messageForm">
-                <!-- Wrap textarea + voice button together so we can position them cleanly -->
+                <!-- Textarea + Single Button -->
                 <div class="message-input-wrapper">
                   <textarea
                     class="message-input"
@@ -94,12 +94,15 @@
                     autocomplete="off"
                     rows="3"
                   ></textarea>
+              
+                  <!-- Single button: switches between mic icon & up-arrow icon -->
                   <button
                     type="button"
                     class="voice-button"
                     id="voiceButton"
                     title="Speak"
                   >
+                    <!-- Default mic icon (SVG) -->
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="32"
@@ -107,22 +110,34 @@
                       fill="currentColor"
                       viewBox="0 0 16 16"
                     >
-                      <path
-                        d="M8 10a2 2 0 0 0 2-2V4a2 2 0 1 0-4 0v4a2 2 0 0 0 2 2z"
-                      />
-                      <path
-                        d="M3 7a5 5 0 0 0 10 0h1a6 6 0 0 1-5 5.917V15H7v-2.083A6 
-                               6 0 0 1 2 7h1z"
-                      />
+                      <path d="M8 10a2 2 0 0 0 2-2V4a2 2 0 
+                               1 0-4 0v4a2 2 0 0 0 2 2z" />
+                      <path d="M3 7a5 5 0 0 0 10 0h1a6 6 
+                               0 0 1-5 5.917V15H7v-2.083A6 
+                               6 0 0 1 2 7h1z" />
                     </svg>
                   </button>
                 </div>
-                <button type="submit" class="send-button">Send</button>
-                <button type="submit" class="send-button" id="reset-btn">
+              
+                <!-- Place Reset and Download PDF below -->
+                <button
+                  type="button"
+                  class="send-button"
+                  id="reset-btn"
+                >
                   Reset
                 </button>
-                <button id="downloadPdfButton" class="send-button">Download PDF</button>
+              
+                <button
+                  type="button"
+                  class="send-button"
+                  id="downloadPdfButton"
+                >
+                  Download PDF
+                </button>
               </form>
+              
+              
             </div>
             <div class="expert-section">
               <p class="expert-text">Want further consultation?</p>
