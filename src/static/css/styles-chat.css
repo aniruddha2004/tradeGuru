@@ -494,6 +494,32 @@ ul, ol {
     font-size: 14px;
     border-left: 3px solid #f39c12;
   }
+  .input-form {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch; /* Ensures children can go full width */
+  }
+
+  .message-input-wrapper {
+    width: 100%;
+    position: relative;
+    margin-bottom: 0.5rem;
+  }
+
+  /* Stack the reset and download buttons below with 100% width */
+  #reset-btn,
+  #downloadPdfButton {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+
+  /* The voice button remains absolutely positioned within the textarea wrapper */
+  .voice-button {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+  }
 }
 
 /* Scrollbar Styling */
