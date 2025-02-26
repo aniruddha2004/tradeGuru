@@ -5,4 +5,5 @@ langchain-community
 langchain-huggingface
 python-dotenv
 reportlab
+openai
 gunicorn
