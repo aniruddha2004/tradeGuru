@@ -3,8 +3,6 @@ firebase-admin
 langchain
 langchain-community
 langchain-huggingface
-langchain-milvus
 python-dotenv
 reportlab
-pymilvus
-openai
+gunicorn
