@@ -6,7 +6,6 @@ firebase-admin-sdk.json
 virtual/
 venv/
 diagrams/
-.vercel/
 __pycache__/
 *.pyc
 *.pyo
@@ -32,3 +31,4 @@ Thumbs.db
 *.log
 logs/
 cache/
+.vercel
