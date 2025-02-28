@@ -270,7 +270,7 @@ def send_email(pdf_data, recipient_email):
     msg = MIMEMultipart()
     msg["From"] = EMAIL_SENDER
     msg["To"] = recipient_email
-    msg["Subject"] = "Election Data Expert Consultation - Chat Log Report"
+    msg["Subject"] = "TradeGuru - Chat Log Report"
 
     body = "Attached is the conversation history for expert review."
     msg.attach(MIMEText(body, "plain"))
