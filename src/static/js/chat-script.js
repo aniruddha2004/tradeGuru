@@ -199,7 +199,7 @@ messageForm.addEventListener("submit", async (e) => {
   const loadingMessage = {
     id: messages.length + 1,
     content:
-      '<span class="typing-text">Typing</span><span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>',
+      '<span class="typing-text">Thinking</span><span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>',
     sender: "assistant",
     timestamp,
     loader: true,
